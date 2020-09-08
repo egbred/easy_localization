@@ -45,7 +45,22 @@ void main(List<String> args) {
   if (_isHelpCommand(args)) {
     _printHelperDisplay();
   } else {
-    handleLangFiles(_generateOption(args));
+    final GenerateOptions options = _generateOption(args);
+    if (options.format == "csv_and_keys") {
+      final GenerateOptions csvOptions = GenerateOptions();
+      csvOptions.format = "csv";
+      csvOptions.sourceDir = options.sourceDir;
+      csvOptions.sourceFile = options.sourceFile;
+      handleLangFiles(csvOptions);
+      final GenerateOptions csvKeysOptions = GenerateOptions();
+      csvKeysOptions.format = "csv_keys";
+      csvKeysOptions.sourceDir = options.sourceDir;
+      csvKeysOptions.sourceFile = options.sourceFile;
+      csvKeysOptions.outputFile = options.outputFile ?? "codegen_loader_keys.g.dart";
+      handleLangFiles(csvKeysOptions);
+    } else {
+      handleLangFiles(options);
+    }
   }
 }
 
@@ -93,10 +108,10 @@ ArgParser _generateArgParser(GenerateOptions generateOptions) {
 
   parser.addOption('format',
       abbr: 'f',
-      defaultsTo: 'json',
+      defaultsTo: 'csv_and_keys',
       callback: (String x) => generateOptions.format = x,
       help: 'Support json, csv or keys formats',
-      allowed: ['json', 'keys', 'csv', 'csv_keys']);
+      allowed: ['json', 'keys', 'csv', 'csv_keys', 'csv_and_keys']);
 
   return parser;
 }
@@ -117,11 +132,12 @@ class GenerateOptions {
 
 void handleLangFiles(GenerateOptions options) async {
   final current = Directory.current;
+  /// s
   final source = Directory.fromUri(Uri.parse(options.sourceDir));
+  /// o
   final output = Directory.fromUri(Uri.parse(options.outputDir));
+  /// S
   final sourcePath = Directory(path.join(current.path, source.path));
-  final outputPath =
-      Directory(path.join(current.path, output.path, options.outputFile));
 
   if (!await sourcePath.exists()) {
     printError('Source path does not exist');
@@ -141,6 +157,8 @@ void handleLangFiles(GenerateOptions options) async {
     files = files.where((f) => f.path.contains('.json')).toList();
   }
 
+  final outputPath =
+  Directory(path.join(current.path, output.path, options.outputFile));
   if (files.isNotEmpty) {
     generateFile(files, outputPath, options.format);
   } else {
