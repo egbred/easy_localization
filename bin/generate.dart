@@ -6,6 +6,30 @@ import 'package:args/args.dart';
 import 'package:path/path.dart' as path;
 import 'package:csv/csv.dart';
 
+class CSVParser {
+  final String fieldDelimiter;
+  final String strings;
+  final List<List<dynamic>> lines;
+
+  CSVParser(this.strings, {this.fieldDelimiter = ','})
+      : lines = CsvToListConverter()
+      .convert(strings, fieldDelimiter: fieldDelimiter);
+
+  List getLanguages() {
+    return lines.first.sublist(1, lines.first.length);
+  }
+
+  Map<String, dynamic> getLanguageMap(String localeName) {
+    final indexLocale = lines.first.indexOf(localeName);
+
+    var translations = <String, dynamic>{};
+    for (var i = 1; i < lines.length; i++) {
+      translations.addAll({lines[i][0]: lines[i][indexLocale]});
+    }
+    return translations;
+  }
+}
+
 const _preservedKeywords = [
   'few',
   'many',
@@ -71,8 +95,8 @@ ArgParser _generateArgParser(GenerateOptions generateOptions) {
       abbr: 'f',
       defaultsTo: 'json',
       callback: (String x) => generateOptions.format = x,
-      help: 'Support json or keys formats',
-      allowed: ['json', 'keys', 'csv']);
+      help: 'Support json, csv or keys formats',
+      allowed: ['json', 'keys', 'csv', 'csv_keys']);
 
   return parser;
 }
@@ -152,6 +176,9 @@ void generateFile(
     case 'csv':
       await _writeCsv(classBuilder, files);
       break;
+    case 'csv_keys':
+      await _writeCsvKeys(classBuilder, files);
+      break;
     default:
       printError('Format not support');
   }
@@ -166,7 +193,7 @@ Future _writeKeys(StringBuffer classBuilder, List<FileSystemEntity> files) async
   var file = '''
 // DO NOT EDIT. This is code generated via package:easy_localization/generate.dart
 
-abstract class  LocaleKeys {
+abstract class LocaleKeys {
 ''';
 
   final fileData = File(files.first.path);
@@ -178,6 +205,27 @@ abstract class  LocaleKeys {
 
   classBuilder.writeln(file);
 }
+
+
+Future _writeCsvKeys(StringBuffer classBuilder, List<FileSystemEntity> files) async {
+  var file = '''
+// DO NOT EDIT. This is code generated via package:easy_localization/generate.dart
+
+abstract class LocaleKeys {
+''';
+
+  classBuilder.writeln(file);
+  final fileData = File(files.first.path);
+  CSVParser csvParser = CSVParser(await fileData.readAsString());
+  for (List<dynamic> line in csvParser.lines) {
+    if(line != csvParser.lines[0]) {
+      final List<String> stringLine = line.map((dynamic e) => e as String).toList();
+      final String key = stringLine[0].replaceAll('.', '_');
+      classBuilder.writeln('  static const String $key = \'${stringLine[0]}\';\n');
+    }
+  }
+}
+
 
 String _resolve(Map<String, dynamic> translations, [String accKey]) {
   var fileContent = '';
@@ -245,29 +293,7 @@ class CodegenLoader extends AssetLoader{
   classBuilder.writeln(gFile);
 }
 
-class CSVParser {
-  final String fieldDelimiter;
-  final String strings;
-  final List<List<dynamic>> lines;
-
-  CSVParser(this.strings, {this.fieldDelimiter = ','}) : lines = CsvToListConverter().convert(strings, fieldDelimiter: fieldDelimiter);
-
-  List getLanguages() {
-    return lines.first.sublist(1, lines.first.length);
-  }
-
-  Map<String, dynamic> getLanguageMap(String localeName) {
-    final indexLocale = lines.first.indexOf(localeName);
-
-    var translations = <String, dynamic>{};
-    for (var i = 1; i < lines.length; i++) {
-      translations.addAll({lines[i][0]: lines[i][indexLocale]});
-    }
-    return translations;
-  }
-}
-
-_writeCsv(StringBuffer classBuilder, List<FileSystemEntity> files) async {
+Future _writeCsv(StringBuffer classBuilder, List<FileSystemEntity> files) async {
   var gFile = '''
 // DO NOT EDIT. This is code generated via package:easy_localization/generate.dart
 
@@ -295,7 +321,7 @@ class CodegenLoader extends AssetLoader{
   List listLangs = csvParser.getLanguages();
   for (String localeName in listLangs) {
     listLocales.add('"$localeName": $localeName');
-    String mapString = JsonEncoder.withIndent("").convert(csvParser.getLanguageMap(localeName));
+    String mapString = JsonEncoder.withIndent("    ").convert(csvParser.getLanguageMap(localeName));
 
     classBuilder.writeln('  static const Map<String,dynamic> $localeName = <String, dynamic>${mapString};\n');
   }
