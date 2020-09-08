@@ -47,16 +47,12 @@ void main(List<String> args) {
   } else {
     final GenerateOptions options = _generateOption(args);
     if (options.format == "csv_and_keys") {
-      final GenerateOptions csvOptions = GenerateOptions();
+      final GenerateOptions csvOptions = _generateOption(args);
       csvOptions.format = "csv";
-      csvOptions.sourceDir = options.sourceDir;
-      csvOptions.sourceFile = options.sourceFile;
       handleLangFiles(csvOptions);
-      final GenerateOptions csvKeysOptions = GenerateOptions();
+      final GenerateOptions csvKeysOptions = _generateOption(args);
       csvKeysOptions.format = "csv_keys";
-      csvKeysOptions.sourceDir = options.sourceDir;
-      csvKeysOptions.sourceFile = options.sourceFile;
-      csvKeysOptions.outputFile = options.outputFile ?? "codegen_loader_keys.g.dart";
+      csvKeysOptions.outputFile = "codegen_loader_keys.g.dart";
       handleLangFiles(csvKeysOptions);
     } else {
       handleLangFiles(options);
