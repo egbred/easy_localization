@@ -335,7 +335,7 @@ class CodegenLoader extends AssetLoader{
   List listLangs = csvParser.getLanguages();
   for (String localeName in listLangs) {
     listLocales.add('"$localeName": $localeName');
-    String mapString = JsonEncoder.withIndent("    ").convert(csvParser.getLanguageMap(localeName));
+    String mapString = JsonEncoder.withIndent("    ").convert(csvParser.getLanguageMap(localeName)).replaceAll("\\n", "\n");
 
     classBuilder.writeln('  static const Map<String,dynamic> $localeName = <String, dynamic>${mapString};\n');
   }
