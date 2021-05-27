@@ -46,13 +46,13 @@ void main(List<String> args) {
     _printHelperDisplay();
   } else {
     final GenerateOptions options = _generateOption(args);
-    if (options.format == "csv_and_keys") {
+    if (options.format == 'csv_and_keys') {
       final GenerateOptions csvOptions = _generateOption(args);
-      csvOptions.format = "csv";
+      csvOptions.format = 'csv';
       handleLangFiles(csvOptions);
       final GenerateOptions csvKeysOptions = _generateOption(args);
-      csvKeysOptions.format = "csv_keys";
-      csvKeysOptions.outputFile = "codegen_loader_keys.g.dart";
+      csvKeysOptions.format = 'csv_keys';
+      csvKeysOptions.outputFile = 'codegen_loader_keys.g.dart';
       handleLangFiles(csvKeysOptions);
     } else {
       handleLangFiles(options);
@@ -105,7 +105,7 @@ ArgParser _generateArgParser(GenerateOptions? generateOptions) {
   parser.addOption('format',
       abbr: 'f',
       defaultsTo: 'csv_and_keys',
-      callback: (String x) => generateOptions.format = x,
+      callback: (String? x) => generateOptions!.format = x,
       help: 'Support json, csv or keys formats',
       allowed: ['json', 'keys', 'csv', 'csv_keys', 'csv_and_keys']);
 
@@ -128,8 +128,8 @@ class GenerateOptions {
 
 void handleLangFiles(GenerateOptions options) async {
   final current = Directory.current;
-  final source = Directory.fromUri(Uri.parse(options.sourceDir));
-  final output = Directory.fromUri(Uri.parse(options.outputDir));
+  final source = Directory.fromUri(Uri.parse(options.sourceDir!));
+  final output = Directory.fromUri(Uri.parse(options.outputDir!));
   final sourcePath = Directory(path.join(current.path, source.path));
 
   if (!await sourcePath.exists()) {
@@ -324,7 +324,7 @@ class CodegenLoader extends AssetLoader{
 
   ''';
   classBuilder.writeln(gFile);
-  List<String> listLocales = List();
+  List<String> listLocales = [];
   final fileData = File(files.first.path);
 
   CSVParser csvParser = CSVParser(await fileData.readAsString());
@@ -332,7 +332,7 @@ class CodegenLoader extends AssetLoader{
   List listLangs = csvParser.getLanguages();
   for (String localeName in listLangs) {
     listLocales.add('"$localeName": $localeName');
-    String mapString = JsonEncoder.withIndent("    ").convert(csvParser.getLanguageMap(localeName)).replaceAll("\\n", "\u{000a}");
+    String mapString = JsonEncoder.withIndent('    ').convert(csvParser.getLanguageMap(localeName)).replaceAll('\\n', '\u{000a}');
 
     classBuilder.writeln('  static const Map<String,dynamic> $localeName = <String, dynamic>${mapString};\n');
   }
