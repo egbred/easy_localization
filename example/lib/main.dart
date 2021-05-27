@@ -176,17 +176,3 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-
-class CustomPreloaderWidget extends StatelessWidget {
-  const CustomPreloaderWidget({Key key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    log('Loading custom preloder widget');
-    return Container(
-      child: Center(
-        child: CircularProgressIndicator()
-      ),
-    );
-  }
-}

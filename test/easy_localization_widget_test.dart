@@ -84,25 +84,6 @@ void main() async {
   );
 
   testWidgets(
-    '[EasyLocalization with  child==null  AssertionError] test',
-    (WidgetTester tester) async {
-      await tester.runAsync(() async {
-        try {
-          await tester.pumpWidget(
-          EasyLocalization(
-          child: null,
-          path: 'i18n',
-          supportedLocales: [Locale('en', 'US')],
-        ));
-        } on AssertionError catch (e) {
-          // throw  AssertionError('Expected ArgumentError');
-          expect(e, isAssertionError);
-        }
-      });
-    },
-  );
-
-  testWidgets(
     '[EasyLocalization with  RootBundleAssetLoader] test',
     (WidgetTester tester) async {
       await tester.runAsync(() async {

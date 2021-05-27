@@ -349,17 +349,36 @@ Example:
   ...
 }
 ```
-⚠️ Key "other" required!
+
+Output:
 
 ```dart
-//Text widget with format
-Text('money').plural(1000000, format: NumberFormat.compact(locale: context.locale.toString())) // output: You have 1M dollars
+print('example.emptyNameError'.tr()); //Output: Please fill in your full name
+```
 
-//String
-print('day'.plural(21)); // output: 21 день
+### 🔥 Reset locale `resetLocale()`
 
-//Static function
-var money = plural('money', 10.23) // output: You have 10.23 dollars
+Reset locale to device locale
+
+Example:
+
+```dart
+RaisedButton(
+  onPressed: (){
+    context.resetLocale();
+  },
+  child: Text(LocaleKeys.reset_locale).tr(),
+)
+```
+
+### 🔥 Get device locale `deviceLocale`
+
+Get device locale
+
+Example:
+
+```dart
+print(${context.deviceLocale.toString()}) // OUTPUT: en_US
 ```
 
 ### 🔥 Delete save locale `deleteSaveLocale()`
